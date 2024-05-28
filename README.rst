@@ -1,7 +1,6 @@
 
 My Benchopt HP_MRI Benchmark
-=====================
-|Build Status| |Python 3.6+|
+
 
 Install
 --------
