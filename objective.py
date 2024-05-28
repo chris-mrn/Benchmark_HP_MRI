@@ -12,18 +12,16 @@ with safe_import_context() as import_ctx:
 class Objective(BaseObjective):
 
     # Name to select the objective in the CLI and to display the results.
-    name = "Ordinary Least Squares"
+    name = "Benchmark_HP_MRI"
 
     # URL of the main repo for this benchmark.
-    url = "https://github.com/#ORG/#BENCHMARK_NAME"
+    url = "https://github.com/chris-mrn/Benchmark_HP_MRI"
 
     # List of parameters for the objective. The benchmark will consider
     # the cross product for each key in the dictionary.
     # All parameters 'p' defined here are available as 'self.p'.
     # This means the OLS objective will have a parameter `self.whiten_y`.
-    parameters = {
-        'whiten_y': [False, True],
-    }
+    parameters = {}
 
     # List of packages needed to run the benchmark.
     # They are installed with conda; to use pip, use 'pip:packagename'. To
@@ -43,11 +41,6 @@ class Objective(BaseObjective):
         # returned by `Dataset.get_data`. This defines the benchmark's
         # API to pass data. This is customizable for each benchmark.
         self.X, self.y = X, y
-
-        # `set_data` can be used to preprocess the data. For instance,
-        # if `whiten_y` is True, remove the mean of `y`.
-        if self.whiten_y:
-            y -= y.mean(axis=0)
 
     def evaluate_result(self, beta):
         # The keyword arguments of this function are the keys of the
