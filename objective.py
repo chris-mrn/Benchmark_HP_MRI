@@ -40,25 +40,23 @@ class Objective(BaseObjective):
         # The keyword arguments of this function are the keys of the dictionary
         # returned by `Dataset.get_data`. This defines the benchmark's
         # API to pass data. This is customizable for each benchmark.
-        self.X, self.y = X, y
+        self.X = X
+        self.y = y
 
-    def evaluate_result(self, beta):
+    def evaluate_result(self, reconstruction):
         # The keyword arguments of this function are the keys of the
         # dictionary returned by `Solver.get_result`. This defines the
         # benchmark's API to pass solvers' result. This is customizable for
         # each benchmark.
-        diff = self.y - self.X @ beta
+
+        score = np.linalg.norm(self.y - reconstruction) ** 2
 
         # This method can return many metrics in a dictionary. One of these
         # metrics needs to be `value` for convergence detection purposes.
-        return dict(
-            value=.5 * diff @ diff,
-        )
+        return dict(value=score)
 
     def get_one_result(self):
-        # Return one solution. The return value should be an object compatible
-        # with `self.evaluate_result`. This is mainly for testing purposes.
-        return dict(beta=np.zeros(self.X.shape[1]))
+        return super().get_one_result()
 
     def get_objective(self):
         # Define the information to pass to each solver to run the benchmark.
@@ -66,7 +64,4 @@ class Objective(BaseObjective):
         # for `Solver.set_objective`. This defines the
         # benchmark's API for passing the objective to the solver.
         # It is customizable for each benchmark.
-        return dict(
-            X=self.X,
-            y=self.y,
-        )
+        return dict(X=self.X)

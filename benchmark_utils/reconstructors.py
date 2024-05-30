@@ -3,52 +3,61 @@ import numpy as np
 import pylops
 
 
-def reconstruction(kspace, mask, prior=pyproximal.proximal.L21(ndim=2),
-                   n_iter=100, sigma_noise=0.01):
+# create a class inspired my skleanr API where .fit() is the iteration of
+# the reconstruction
+# and .transform() is the final reconstruction (gtpd)
+class MRI_Reconstructor:
+    def __init__(self,
+                 prior=pyproximal.proximal.L21(ndim=2),
+                 prior_coeff=1):
 
-    sampling = mask
-    sampling1 = np.fft.fftshift(sampling)
+        self.prior = prior
+        self.prior_coeff = prior_coeff
 
-    image = np.fft.ifft2(kspace).real
+    def reconstruct(self, undersampled_kspace, n_iter=100):
 
-    gt = image/256
+        shape = undersampled_kspace.shape
+        size = undersampled_kspace.size
 
-    Fop = pylops.signalprocessing.FFT2D(dims=gt.shape)
-    Rop = pylops.Restriction(gt.size, np.where(sampling1.ravel() == 1)[0],
-                             dtype=np.complex128)
-    Dop = Rop * Fop
+        d = undersampled_kspace
 
-    # KK spectrum
-    GT = Fop * gt.ravel()
-    GT = GT.reshape(gt.shape)
+        mask = np.abs(d) > 0
 
-    # Data (Masked KK spectrum)
-    d = Dop * gt.ravel()
+        d = d.ravel()
+        d = d[mask.ravel() == 1]
 
-    # adding noise to d
-    real_noise = np.random.normal(0, sigma_noise, d.shape)
-    imag_noise = np.random.normal(0, sigma_noise, d.shape)
-    d = d + real_noise + 1j * imag_noise
+        Fourier_operator = pylops.signalprocessing.FFT2D(dims=shape,
+                                                         fftshift_after=True)
+        Mask_operator = pylops.Restriction(size,
+                                           np.where(mask.ravel() == 1)[0],
+                                           dtype=np.complex128)
+        Dop = Mask_operator*Fourier_operator
 
-    with pylops.disabled_ndarray_multiplication():
-        sigma = 0.04
-        prior = prior
-        data_fidelity = prior(Op=Dop, b=d.ravel(), niter=50, warm=True)
-        Gop = sigma * pylops.Gradient(dims=gt.shape, edge=True, kind='forward',
-                                      dtype=np.complex128)
+        with pylops.disabled_ndarray_multiplication():
+            sigma = 0.04
+            prior = self.prior
+            data_fidelity = pyproximal.proximal.L2(Op=Dop,
+                                                   b=d,
+                                                   niter=50,
+                                                   warm=True)
+            Gop = sigma * pylops.Gradient(dims=shape,
+                                          edge=True,
+                                          kind='forward',
+                                          dtype=np.complex128)
 
-        L = sigma ** 2 * 8
-        tau = .99 / np.sqrt(L)
-        mu = .99 / np.sqrt(L)
-        gtpd = pyproximal.optimization.primaldual.PrimalDual(
-            data_fidelity,
-            prior,
-            Gop,
-            x0=np.zeros(gt.size),
-            tau=tau,
-            mu=mu,
-            theta=1.,
-            niter=n_iter, show=True)
-        gtpd = np.real(gtpd.reshape(gt.shape))
+            L = sigma ** 2 * 8
+            tau = .99 / np.sqrt(L)
+            mu = .99 / np.sqrt(L)
+            gtpd = pyproximal.optimization.primaldual.PrimalDual(
+                                data_fidelity,
+                                prior,
+                                Gop,
+                                x0=np.zeros(size),
+                                tau=tau,
+                                mu=mu,
+                                theta=1.,
+                                niter=n_iter,
+                                show=True)
+        reconstruction = np.real(gtpd.reshape(shape))
 
-    return gtpd
+        return reconstruction
