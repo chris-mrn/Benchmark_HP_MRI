@@ -15,3 +15,4 @@ def power_density_mask(kspace_shape, m):
             power_mask[i, j] = np.random.uniform(0, 1) < 2/(1+norm_radius**m)
 
     return power_mask
+

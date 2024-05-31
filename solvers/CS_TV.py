@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
 
     # Name to select the solver in the CLI and to display the results.
-    name = 'CS_l1'
+    name = 'CS_TV'
 
     # List of parameters for the solver. The benchmark will consider
     # the cross product for each key in the dictionary.
@@ -38,7 +38,11 @@ class Solver(BaseSolver):
         # You can also use a `tolerance` or a `callback`, as described in
         # https://benchopt.github.io/performance_curves.html
 
-        prior = pyproximal.proximal.L21(ndim=2)
+        sigma = 1
+        # ? why 2*shape[1] works
+        prior = pyproximal.TV(dims=(self.X.shape[0], 2*self.X.shape[1]),
+                              sigma=sigma)
+
         self.model = MRI_Reconstructor(prior=prior,
                                        prior_coeff=1)
 

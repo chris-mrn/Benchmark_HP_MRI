@@ -6,7 +6,7 @@ from benchopt import BaseDataset, safe_import_context
 with safe_import_context() as import_ctx:
     from brainweb_dl import get_mri
     from benchmark_utils.mask import power_density_mask
-    import numpy as np
+    from benchmark_utils.undersampling import undersampling_kspace
 
 
 # All datasets must be named `Dataset` and inherit from `BaseDataset`
@@ -35,13 +35,7 @@ class Dataset(BaseDataset):
         image = mri_data[90, :, :]
         image = image/256
         mask = power_density_mask(image.shape, 8)
-
-        kspace = np.fft.fft2(image, norm='ortho')
-        kspace = np.fft.fftshift(kspace)
-
-        undersampled_kspace = mask*kspace
-
-        # The dictionary defines the keyword arguments for `Objective.set_data`
+        undersampled_kspace = undersampling_kspace(image, mask)
 
         # I want to return a dictionary with the undersampled image regarding
         # a specific mask and the ground truth image.

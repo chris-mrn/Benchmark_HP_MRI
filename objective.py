@@ -4,7 +4,8 @@ from benchopt import BaseObjective, safe_import_context
 # - skipping import to speed up autocompletion in CLI.
 # - getting requirements info when all dependencies are not installed.
 with safe_import_context() as import_ctx:
-    import numpy as np
+    from skimage.metrics import mean_squared_error as mse
+    from skimage.metrics import structural_similarity as ssim
 
 
 # The benchmark objective must be named `Objective` and
@@ -30,7 +31,7 @@ class Objective(BaseObjective):
     # solvers or datasets should be declared in Dataset or Solver (see
     # simulated.py and python-gd.py).
     # Example syntax: requirements = ['numpy', 'pip:jax', 'pytorch:pytorch']
-    requirements = []
+    requirements = ['pip:skimage']
 
     # Minimal version of benchopt required to run this benchmark.
     # Bump it up if the benchmark depends on a new feature of benchopt.
@@ -49,11 +50,14 @@ class Objective(BaseObjective):
         # benchmark's API to pass solvers' result. This is customizable for
         # each benchmark.
 
-        score = np.linalg.norm(self.y - reconstruction) ** 2
+        # Compute the mean squared error between the true and reconstructed
+        # images.
+        score = mse(reconstruction, self.y)
+        ssim_score = ssim(reconstruction, self.y, data_range=1.0)
 
         # This method can return many metrics in a dictionary. One of these
         # metrics needs to be `value` for convergence detection purposes.
-        return dict(value=score)
+        return dict(value=score, mse=score, ssim=ssim_score)
 
     def get_one_result(self):
         return super().get_one_result()
