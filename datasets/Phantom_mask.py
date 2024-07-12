@@ -1,0 +1,59 @@
+from benchopt import BaseDataset, safe_import_context
+
+# Protect the import with `safe_import_context()`. This allows:
+# - skipping import to speed up autocompletion in CLI.
+# - getting requirements info when all dependencies are not installed.
+with safe_import_context() as import_ctx:
+    from benchmark_utils.Phantom_generator import Phantom_5D_HP_MRI
+    import numpy as np
+    from benchmark_utils.Sampling import sampled_kspace5D_mask
+
+
+# All datasets must be named `Dataset` and inherit from `BaseDataset`
+class Dataset(BaseDataset):
+
+    # Name to select the dataset in the CLI and to display the results.
+    name = "Phantom_mask"
+
+    # List of parameters to generate the datasets. The benchmark will consider
+    # the cross product for each key in the dictionary.
+    # Any parameters 'param' defined here is available as `self.param`.
+    parameters = {}
+
+    # List of packages needed to run the dataset. See the corresponding
+    # section in objective.py
+    requirements = ["pip:brainweb_dl"]
+
+    def get_data(self):
+        # The return arguments of this function are passed as keyword arguments
+        # to `Objective.set_data`. This defines the benchmark's
+        # API to pass data. It is customizable for each benchmark.
+
+        phantom_generator_1 = Phantom_5D_HP_MRI(sub_id=45,
+                                                contrast="T1",
+                                                size=(48, 48, 24),
+                                                acquisition_time=120,
+                                                time_points=5,
+                                                spectral_length=32)
+        phantom_generator_2 = Phantom_5D_HP_MRI(sub_id=46,
+                                                contrast="T1",
+                                                size=(48, 48, 24),
+                                                acquisition_time=120,
+                                                time_points=5,
+                                                spectral_length=32)
+
+        phantom_1 = phantom_generator_1.make_5D_HP_MRI_phantom()
+        phantom_2 = phantom_generator_2.make_5D_HP_MRI_phantom()
+        image_1 = phantom_1
+        image_2 = phantom_2
+        kspace_1 = np.fft.fftshift(np.fft.fftn(image_1, norm='ortho'),
+                                   axes=(0, 1, 2))
+        kspace_2 = np.fft.fftshift(np.fft.fftn(image_2, norm='ortho'),
+                                   axes=(0, 1, 2))
+
+        undersampled_kspace_1 = sampled_kspace5D_mask(kspace_1)
+        undersampled_kspace_2 = sampled_kspace5D_mask(kspace_2)
+        X = [undersampled_kspace_1, undersampled_kspace_2]
+        y = [image_1, image_2]
+
+        return dict(X=X, y=y)

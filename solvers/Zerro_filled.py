@@ -21,7 +21,8 @@ class Solver(BaseSolver):
 
     # List of packages needed to run the solver. See the corresponding
     # section in objective.py
-    requirements = ["pip:pyproximal"]
+
+    sampling_strategy = 'run_once'
 
     def set_objective(self, X):
         # Define the information received by each solver from the objective.
@@ -37,7 +38,7 @@ class Solver(BaseSolver):
         # You can also use a `tolerance` or a `callback`, as described in
         # https://benchopt.github.io/performance_curves.html
 
-        reconstruction = np.fft.ifft2(self.X, norm='ortho').real
+        reconstruction = np.abs(np.fft.ifftn(self.X, norm='ortho'))
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):

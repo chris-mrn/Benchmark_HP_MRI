@@ -5,7 +5,8 @@ from benchopt import BaseObjective, safe_import_context
 # - getting requirements info when all dependencies are not installed.
 with safe_import_context() as import_ctx:
     from skimage.metrics import mean_squared_error as mse
-    from skimage.metrics import structural_similarity as ssim
+    from benchmark_utils.Score import ssim_score_5D
+    import numpy as np
 
 
 # The benchmark objective must be named `Objective` and
@@ -21,7 +22,6 @@ class Objective(BaseObjective):
     # List of parameters for the objective. The benchmark will consider
     # the cross product for each key in the dictionary.
     # All parameters 'p' defined here are available as 'self.p'.
-    # This means the OLS objective will have a parameter `self.whiten_y`.
     parameters = {}
 
     # List of packages needed to run the benchmark.
@@ -31,7 +31,6 @@ class Objective(BaseObjective):
     # solvers or datasets should be declared in Dataset or Solver (see
     # simulated.py and python-gd.py).
     # Example syntax: requirements = ['numpy', 'pip:jax', 'pytorch:pytorch']
-    requirements = ['pip:scikit-image']
 
     # Minimal version of benchopt required to run this benchmark.
     # Bump it up if the benchmark depends on a new feature of benchopt.
@@ -52,15 +51,20 @@ class Objective(BaseObjective):
 
         # Compute the mean squared error between the true and reconstructed
         # images.
-        score = mse(reconstruction, self.y)
-        ssim_score = ssim(reconstruction, self.y, data_range=1.0)
-
+        mse_score = mse(reconstruction, self.y)
+        ssim_score = ssim_score_5D(reconstruction, self.y)
+        self.value = mse_score
         # This method can return many metrics in a dictionary. One of these
         # metrics needs to be `value` for convergence detection purposes.
-        return dict(value=score, mse=score, ssim=ssim_score)
+        return dict(value=mse_score,
+                    mse_score=mse_score,
+                    ssim_score=ssim_score)
 
     def get_one_result(self):
-        return super().get_one_result()
+        # Return one solution. The return value should be an object compatible
+        # with `self.evaluate_result`. This is mainly for testing purposes.
+        reconstruction = np.zeros(self.X.shape)
+        return dict(reconstruction=reconstruction)
 
     def get_objective(self):
         # Define the information to pass to each solver to run the benchmark.

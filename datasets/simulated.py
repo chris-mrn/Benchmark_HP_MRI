@@ -4,9 +4,9 @@ from benchopt import BaseDataset, safe_import_context
 # - skipping import to speed up autocompletion in CLI.
 # - getting requirements info when all dependencies are not installed.
 with safe_import_context() as import_ctx:
-    from brainweb_dl import get_mri
-    from benchmark_utils.mask import power_density_mask
+    from benchmark_utils.Phantom_generator import Phantom_5D_HP_MRI
     import numpy as np
+    from benchmark_utils.Sampling import sampled_kspace5D_mask
 
 
 # All datasets must be named `Dataset` and inherit from `BaseDataset`
@@ -29,24 +29,17 @@ class Dataset(BaseDataset):
         # to `Objective.set_data`. This defines the benchmark's
         # API to pass data. It is customizable for each benchmark.
 
-        mri_data = get_mri(sub_id=43, contrast="T1")
-        mri_data = mri_data[::-1, ...]
+        phantom_generator = Phantom_5D_HP_MRI(sub_id=45,
+                                              contrast="T1",
+                                              size=(10, 10, 10),
+                                              acquisition_time=120,
+                                              time_points=3,
+                                              spectral_length=10)
 
-        image = mri_data[90, :, :]
-        image = image/256
-        mask = power_density_mask(image.shape, 8)
-
-        kspace = np.fft.fft2(image, norm='ortho')
-        kspace = np.fft.fftshift(kspace)
-
-        undersampled_kspace = mask*kspace
-
-        # The dictionary defines the keyword arguments for `Objective.set_data`
-
-        # I want to return a dictionary with the undersampled image regarding
-        # a specific mask and the ground truth image.
-
-        # i only want images no kspace data
-        # X will be a list of images with the zero filling reconstruction
+        phantom = phantom_generator.make_5D_HP_MRI_phantom()
+        image = phantom
+        kspace = np.fft.fftshift(np.fft.fftn(phantom, norm='ortho'),
+                                 axes=(0, 1, 2))
+        undersampled_kspace = sampled_kspace5D_mask(kspace)
 
         return dict(X=undersampled_kspace, y=image)
