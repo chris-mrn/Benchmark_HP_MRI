@@ -1,8 +1,10 @@
+from benchopt import safe_import_context
 
-import numpy as np
-from brainweb_dl import get_mri
-from scipy.ndimage import zoom
-from scipy.integrate import odeint
+with safe_import_context() as import_ctx:
+    import numpy as np
+    from brainweb_dl import get_mri
+    from scipy.ndimage import zoom
+    from scipy.integrate import odeint
 
 
 class Phantom_5D_HP_MRI:

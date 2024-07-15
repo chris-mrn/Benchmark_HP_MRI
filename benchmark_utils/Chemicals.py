@@ -1,6 +1,9 @@
-import numpy as np
-from scipy.signal import find_peaks
-from joblib import Parallel, delayed
+from benchopt import safe_import_context
+
+with safe_import_context() as import_ctx:
+    import numpy as np
+    from scipy.signal import find_peaks
+    from joblib import Parallel, delayed
 
 
 # Optimized find_amplitudes_chemicals function

@@ -1,7 +1,10 @@
-import numpy as np
-from benchmark_utils.Mask import power_3D_density_mask
-import matlab.engine
-from numba import njit, prange
+from benchopt import safe_import_context
+
+with safe_import_context() as import_ctx:
+    import numpy as np
+    from benchmark_utils.Mask import power_3D_density_mask
+    import matlab.engine
+    from numba import njit, prange
 
 
 # TN, WN, MW, RN, FOV, DPnkDW, kDW, maxDG_Tpms

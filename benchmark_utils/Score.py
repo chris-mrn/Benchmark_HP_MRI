@@ -1,5 +1,7 @@
+from benchopt import safe_import_context
 
-from skimage.metrics import structural_similarity as ssim
+with safe_import_context() as import_ctx:
+    from skimage.metrics import structural_similarity as ssim
 
 
 def ssim_score_5D(reconstruction, y):

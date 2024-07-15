@@ -1,6 +1,9 @@
-import pyproximal
-import numpy as np
-import pylops
+from benchopt import safe_import_context
+
+with safe_import_context() as import_ctx:
+    import pyproximal
+    import numpy as np
+    import pylops
 
 
 class MRI_Reconstructor:
