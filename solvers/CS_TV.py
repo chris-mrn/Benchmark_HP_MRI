@@ -48,9 +48,9 @@ class Solver(BaseSolver):
                                            edge=True,
                                            kind='forward',
                                            dtype=np.complex128),
-                                       prior_coeff=1,
+                                       prior_coeff=0.04,
                                        L=1)
-        reconstruction = self.model.reconstruct(self.X, n_iter=100)
+        reconstruction = self.model.reconstruct(self.X, n_iter=50)
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):
