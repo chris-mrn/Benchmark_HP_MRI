@@ -6,15 +6,14 @@ from benchopt import BaseDataset, safe_import_context
 with safe_import_context() as import_ctx:
     from benchmark_utils.Phantom_generator import Phantom_5D_HP_MRI
     import numpy as np
-    from benchmark_utils.Sampling import sampled_kspace5D_mask
-    from benchmark_utils.Chemicals import make_chemicals_images
+    from benchmark_utils.Sampling import sampled_5D_matlab_waves
 
 
 # All datasets must be named `Dataset` and inherit from `BaseDataset`
 class Dataset(BaseDataset):
 
     # Name to select the dataset in the CLI and to display the results.
-    name = "simulated"
+    name = "Phantom_matlab"
 
     # List of parameters to generate the datasets. The benchmark will consider
     # the cross product for each key in the dictionary.
@@ -32,17 +31,42 @@ class Dataset(BaseDataset):
 
         phantom_generator = Phantom_5D_HP_MRI(sub_id=45,
                                               contrast="T1",
-                                              size=(10, 10, 10),
+                                              size=(48, 48, 24),
                                               acquisition_time=120,
-                                              time_points=3,
-                                              spectral_length=10)
+                                              time_points=5,
+                                              spectral_length=32)
 
         phantom = phantom_generator.make_5D_HP_MRI_phantom()
         image = phantom
-        kspace = np.fft.fftshift(np.fft.fftn(phantom, norm='ortho'),
+
+        kspace = np.fft.fftshift(np.fft.fftn(image, norm='ortho'),
                                  axes=(0, 1, 2))
-        undersampled_kspace = sampled_kspace5D_mask(kspace)
+
+        # Matlab parameters for the GE 3T scanner
+        points_per_wave = 8192
+        number_of_waves = 3500
+        MM = 20
+        RNx = 48
+        RNy = RNx
+        RNz = RNx/2
+        fOV = RNx*10e-2
+        DPnkDW = 512e-6
+        kDW = 30
+        maxDG_Tpms = 1
+
+        undersampled_kspace = sampled_5D_matlab_waves(kspace,
+                                                      points_per_wave,
+                                                      number_of_waves,
+                                                      MM,
+                                                      RNx,
+                                                      RNy,
+                                                      RNz,
+                                                      fOV,
+                                                      DPnkDW,
+                                                      kDW,
+                                                      maxDG_Tpms)
+
         X = undersampled_kspace
-        y = make_chemicals_images(image, n_chemicals=5, threshold=0)
+        y = image
 
         return dict(X=X, y=y)

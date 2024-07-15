@@ -85,8 +85,8 @@ class MRI_Reconstructor:
                                 mu=mu,
                                 theta=1.0,
                                 niter=n_iter,
-                                show=False)
+                                show=True)
 
-        reconstruction = np.abs(gtpd.reshape(shape))
+        reconstruction = gtpd.reshape(shape)
 
         return reconstruction

@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
     from skimage.metrics import mean_squared_error as mse
     from benchmark_utils.Score import ssim_score_5D
     import numpy as np
+    from benchmark_utils.Chemicals import make_chemicals_images
 
 
 # The benchmark objective must be named `Objective` and
@@ -51,8 +52,12 @@ class Objective(BaseObjective):
 
         # Compute the mean squared error between the true and reconstructed
         # images.
-        mse_score = mse(reconstruction, self.y)
-        ssim_score = ssim_score_5D(reconstruction, self.y)
+        recon_chemicals = make_chemicals_images(reconstruction,
+                                                n_chemicals=5,
+                                                threshold=0)
+        recon_chemicals = np.abs(recon_chemicals)
+        mse_score = mse(recon_chemicals, np.abs(self.y))
+        ssim_score = ssim_score_5D(recon_chemicals, np.abs(self.y))
         self.value = mse_score
         # This method can return many metrics in a dictionary. One of these
         # metrics needs to be `value` for convergence detection purposes.
@@ -63,7 +68,7 @@ class Objective(BaseObjective):
     def get_one_result(self):
         # Return one solution. The return value should be an object compatible
         # with `self.evaluate_result`. This is mainly for testing purposes.
-        reconstruction = np.zeros(self.X.shape)
+        reconstruction = np.zeros(self.y.shape)
         return dict(reconstruction=reconstruction)
 
     def get_objective(self):

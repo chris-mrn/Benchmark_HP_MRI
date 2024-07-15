@@ -6,6 +6,8 @@ from benchopt import BaseSolver, safe_import_context
 with safe_import_context() as import_ctx:
     from benchmark_utils.Reconstructors import MRI_Reconstructor
     import pyproximal
+    import pylops
+    import numpy as np
 
 
 # The benchmark solvers must be named `Solver` and
@@ -23,7 +25,6 @@ class Solver(BaseSolver):
     # List of packages needed to run the solver. See the corresponding
     # section in objective.py
     requirements = ["pip:pyproximal"]
-
     sampling_strategy = 'run_once'
 
     def set_objective(self, X):
@@ -41,7 +42,12 @@ class Solver(BaseSolver):
         # https://benchopt.github.io/performance_curves.html
 
         self.model = MRI_Reconstructor(n_dim=5,
-                                       prior=pyproximal.TV(self.X.shape),
+                                       prior=pyproximal.L1(),
+                                       prior_domain=pylops.Gradient(
+                                           dims=self.X.shape,
+                                           edge=True,
+                                           kind='forward',
+                                           dtype=np.complex128),
                                        prior_coeff=1,
                                        L=1)
         reconstruction = self.model.reconstruct(self.X, n_iter=10)

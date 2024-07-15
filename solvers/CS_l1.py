@@ -22,8 +22,8 @@ class Solver(BaseSolver):
 
     # List of packages needed to run the solver. See the corresponding
     # section in objective.py
-
     requirements = ["pip:pyproximal"]
+    sampling_strategy = 'run_once'
 
     def set_objective(self, X):
         # Define the information received by each solver from the objective.
@@ -55,5 +55,4 @@ class Solver(BaseSolver):
         # keyword arguments for `Objective.evaluate_result`
         # This defines the benchmark's API for solvers' results.
         # it is customizable for each benchmark.
-        print('wesh la gadji')
         return dict(reconstruction=self.reconstruction)
