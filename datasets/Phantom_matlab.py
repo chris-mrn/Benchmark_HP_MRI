@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
     from benchmark_utils.Phantom_generator import Phantom_5D_HP_MRI
     import numpy as np
     from benchmark_utils.Sampling import sampled_5D_matlab_waves
+    from benchmark_utils.Chemicals import make_chemicals_images
 
 
 # All datasets must be named `Dataset` and inherit from `BaseDataset`
@@ -33,11 +34,11 @@ class Dataset(BaseDataset):
                                               contrast="T1",
                                               size=(48, 48, 24),
                                               acquisition_time=120,
-                                              time_points=5,
+                                              time_points=10,
                                               spectral_length=32)
 
         phantom = phantom_generator.make_5D_HP_MRI_phantom()
-        image = phantom
+        image = phantom[:, :, :, :, [1, 2, 3, 4, 5]]
 
         kspace = np.fft.fftshift(np.fft.fftn(image, norm='ortho'),
                                  axes=(0, 1, 2))
@@ -66,7 +67,8 @@ class Dataset(BaseDataset):
                                                       kDW,
                                                       maxDG_Tpms)
 
+        sparsity = np.sum(undersampled_kspace == 0)/undersampled_kspace.size
         X = undersampled_kspace
-        y = image
+        y = make_chemicals_images(image, n_chemicals=5, threshold=0)
 
-        return dict(X=X, y=y)
+        return dict(X=X, y=y, sparsity=sparsity)

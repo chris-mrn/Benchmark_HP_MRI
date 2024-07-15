@@ -37,12 +37,13 @@ class Objective(BaseObjective):
     # Bump it up if the benchmark depends on a new feature of benchopt.
     min_benchopt_version = "1.5"
 
-    def set_data(self, X, y):
+    def set_data(self, X, y, sparsity):
         # The keyword arguments of this function are the keys of the dictionary
         # returned by `Dataset.get_data`. This defines the benchmark's
         # API to pass data. This is customizable for each benchmark.
         self.X = X
         self.y = y
+        self.sparsity = sparsity
 
     def evaluate_result(self, reconstruction):
         # The keyword arguments of this function are the keys of the
@@ -63,7 +64,8 @@ class Objective(BaseObjective):
         # metrics needs to be `value` for convergence detection purposes.
         return dict(value=mse_score,
                     mse_score=mse_score,
-                    ssim_score=ssim_score)
+                    ssim_score=ssim_score,
+                    sparsity=self.sparsity)
 
     def get_one_result(self):
         # Return one solution. The return value should be an object compatible

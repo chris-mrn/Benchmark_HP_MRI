@@ -25,9 +25,9 @@ def power_3D_density_mask(kspace_shape, m):
     center_z = kspace_shape[2] // 2
     max_radius = np.sqrt(center_x ** 2 + center_y ** 2 + center_z ** 2)
 
-    radius = 1 + np.sqrt((z - center_z) ** 2 +
-                         (y - center_y) ** 2 +
-                         (x - center_x) ** 2) / max_radius
+    radius = 1+np.sqrt((z - center_z) ** 2 +
+                       (y - center_y) ** 2 +
+                       (x - center_x) ** 2) / max_radius
     probability = 8 / (1 + radius ** m)
 
     power_mask = np.random.uniform(0, 1, kspace_shape) < probability

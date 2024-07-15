@@ -46,4 +46,3 @@ def make_chemicals_images(recon, n_chemicals=5, threshold=0):
         chemicals_images_time[x, y, z, :, :] = chemical_amplitudes
 
     return chemicals_images_time
-

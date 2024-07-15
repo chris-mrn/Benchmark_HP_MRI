@@ -50,7 +50,7 @@ class Solver(BaseSolver):
                                            dtype=np.complex128),
                                        prior_coeff=1,
                                        L=1)
-        reconstruction = self.model.reconstruct(self.X, n_iter=10)
+        reconstruction = self.model.reconstruct(self.X, n_iter=100)
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):

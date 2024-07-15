@@ -35,13 +35,13 @@ def sampled_5D_matlab_waves(kspace_5D,
     return sampled_kspace_5D
 
 
-# Create a 4D spatial spectral mask
+# Create a 5D spatial spectral temporal mask
 def sampled_kspace5D_mask(kspace):
     nx, ny, nz, ns, nt = kspace.shape
     sampled_kspace_5D = np.zeros((nx, ny, nz, ns, nt), dtype=np.complex128)
     for t in range(nt):
         for s in range(ns):
-            mask = power_3D_density_mask((nx, ny, nz), 12)
+            mask = power_3D_density_mask((nx, ny, nz), 10)
             sampled_kspace_5D[:, :, :, s, t] = mask * kspace[:, :, :, s, t]
 
     return sampled_kspace_5D

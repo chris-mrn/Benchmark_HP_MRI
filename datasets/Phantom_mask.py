@@ -34,18 +34,18 @@ class Dataset(BaseDataset):
                                               contrast="T1",
                                               size=(48, 48, 24),
                                               acquisition_time=120,
-                                              time_points=5,
+                                              time_points=10,
                                               spectral_length=32)
 
         phantom = phantom_generator.make_5D_HP_MRI_phantom()
-        image = phantom
+        image = phantom[:, :, :, :, [1, 2, 3, 4, 5]]
 
         kspace = np.fft.fftshift(np.fft.fftn(image, norm='ortho'),
                                  axes=(0, 1, 2))
 
         undersampled_kspace = sampled_kspace5D_mask(kspace)
-
+        sparsity = np.sum(undersampled_kspace == 0)/undersampled_kspace.size
         X = undersampled_kspace
         y = make_chemicals_images(image, n_chemicals=5, threshold=0)
 
-        return dict(X=X, y=y)
+        return dict(X=X, y=y, sparsity=sparsity)
