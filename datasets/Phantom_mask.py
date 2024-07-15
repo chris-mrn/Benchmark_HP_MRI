@@ -14,7 +14,7 @@ with safe_import_context() as import_ctx:
 class Dataset(BaseDataset):
 
     # Name to select the dataset in the CLI and to display the results.
-    name = "simulated"
+    name = "Phantom_mask"
 
     # List of parameters to generate the datasets. The benchmark will consider
     # the cross product for each key in the dictionary.
@@ -32,7 +32,7 @@ class Dataset(BaseDataset):
 
         phantom_generator = Phantom_5D_HP_MRI(sub_id=45,
                                               contrast="T1",
-                                              size=(10, 10, 10),
+                                              size=(48, 48, 24),
                                               acquisition_time=120,
                                               time_points=10,
                                               spectral_length=32)
@@ -42,6 +42,7 @@ class Dataset(BaseDataset):
 
         kspace = np.fft.fftshift(np.fft.fftn(image, norm='ortho'),
                                  axes=(0, 1, 2))
+
         undersampled_kspace = sampled_kspace5D_mask(kspace)
         sparsity = np.sum(undersampled_kspace == 0)/undersampled_kspace.size
         X = undersampled_kspace

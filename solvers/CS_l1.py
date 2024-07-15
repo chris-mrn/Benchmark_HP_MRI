@@ -4,7 +4,7 @@ from benchopt import BaseSolver, safe_import_context
 # - skipping import to speed up autocompletion in CLI.
 # - getting requirements info when all dependencies are not installed.
 with safe_import_context() as import_ctx:
-    from benchmark_utils.reconstructors import MRI_Reconstructor
+    from benchmark_utils.Reconstructors import MRI_Reconstructor
     import pyproximal
 
 
@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
 
     # Name to select the solver in the CLI and to display the results.
-    name = 'CS_l1'
+    name = 'CS_L1'
 
     # List of parameters for the solver. The benchmark will consider
     # the cross product for each key in the dictionary.
@@ -23,6 +23,7 @@ class Solver(BaseSolver):
     # List of packages needed to run the solver. See the corresponding
     # section in objective.py
     requirements = ["pip:pyproximal"]
+    sampling_strategy = 'run_once'
 
     def set_objective(self, X):
         # Define the information received by each solver from the objective.
@@ -38,10 +39,10 @@ class Solver(BaseSolver):
         # You can also use a `tolerance` or a `callback`, as described in
         # https://benchopt.github.io/performance_curves.html
 
-        prior = pyproximal.proximal.L21(ndim=2)
-        self.model = MRI_Reconstructor(prior=prior,
-                                       prior_coeff=1)
-
+        self.model = MRI_Reconstructor(n_dim=5,
+                                       prior=pyproximal.L1(),
+                                       prior_coeff=1,
+                                       L=1)
         reconstruction = self.model.reconstruct(self.X, n_iter=10)
         self.reconstruction = reconstruction
 
