@@ -24,7 +24,7 @@ class Solver(BaseSolver):
 
     # List of packages needed to run the solver. See the corresponding
     # section in objective.py
-    requirements = ["pip:pyproximal"]
+    requirements = ["pip:pyproximal, pip:pylops"]
     sampling_strategy = 'run_once'
 
     def set_objective(self, X):
@@ -50,7 +50,7 @@ class Solver(BaseSolver):
                                            dtype=np.complex128),
                                        prior_coeff=0.04,
                                        L=1)
-        reconstruction = self.model.reconstruct(self.X, n_iter=50)
+        reconstruction = self.model.reconstruct(self.X, n_iter=10)
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):

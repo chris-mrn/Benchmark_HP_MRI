@@ -36,6 +36,10 @@ class Objective(BaseObjective):
     # Minimal version of benchopt required to run this benchmark.
     # Bump it up if the benchmark depends on a new feature of benchopt.
     min_benchopt_version = "1.5"
+    requirements = ["pip:scikit-image"
+                    "pip:brainweb_dl",
+                    "pip:numba",
+                    ]
 
     def set_data(self, X, y, sparsity):
         # The keyword arguments of this function are the keys of the dictionary
