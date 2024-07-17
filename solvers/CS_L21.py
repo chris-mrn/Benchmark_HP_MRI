@@ -13,7 +13,7 @@ with safe_import_context() as import_ctx:
 class Solver(BaseSolver):
 
     # Name to select the solver in the CLI and to display the results.
-    name = 'CS_L1'
+    name = 'CS_L21'
 
     # List of parameters for the solver. The benchmark will consider
     # the cross product for each key in the dictionary.
@@ -40,8 +40,7 @@ class Solver(BaseSolver):
         # https://benchopt.github.io/performance_curves.html
 
         self.model = MRI_Reconstructor(n_dim=5,
-                                       prior=pyproximal.L1(),
-                                       prior_coeff=1,
+                                       prior=pyproximal.proximal.L21(ndim=5),
                                        L=1)
         reconstruction = self.model.reconstruct(self.X, n_iter=50)
         self.reconstruction = reconstruction

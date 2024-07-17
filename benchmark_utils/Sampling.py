@@ -3,12 +3,14 @@ from benchopt import safe_import_context
 with safe_import_context() as import_ctx:
     import numpy as np
     from benchmark_utils.Mask import power_3D_density_mask
+    from benchmark_utils.Mask import gaussian_3D_density_mask
     import matlab.engine
     from numba import njit, prange
 
 
 # TN, WN, MW, RN, FOV, DPnkDW, kDW, maxDG_Tpms
 def sampled_5D_matlab_waves(kspace_5D,
+                            matlab_script_path,
                             points_per_wave,
                             number_of_waves,
                             MM,
@@ -20,7 +22,7 @@ def sampled_5D_matlab_waves(kspace_5D,
                             kDW,
                             maxDG_Tpms):
     eng = matlab.engine.start_matlab()
-    eng.addpath('/Users/christophermarouani/Desktop/Code_vesco_2D')
+    eng.addpath(matlab_script_path)
     enc_g = eng.write_5D_LFRwaves_1H(points_per_wave,
                                      number_of_waves,
                                      MM,
@@ -39,13 +41,20 @@ def sampled_5D_matlab_waves(kspace_5D,
 
 
 # Create a 5D spatial spectral temporal mask
-def sampled_kspace5D_mask(kspace):
+def sampled_kspace5D_mask(kspace, mask):
     nx, ny, nz, ns, nt = kspace.shape
     sampled_kspace_5D = np.zeros((nx, ny, nz, ns, nt), dtype=np.complex128)
-    for t in range(nt):
-        for s in range(ns):
-            mask = power_3D_density_mask((nx, ny, nz), 10)
-            sampled_kspace_5D[:, :, :, s, t] = mask * kspace[:, :, :, s, t]
+    if mask == 'power':
+        for t in range(nt):
+            for s in range(ns):
+                mask = power_3D_density_mask((nx, ny, nz), 10)
+                sampled_kspace_5D[:, :, :, s, t] = mask * kspace[:, :, :, s, t]
+
+    elif mask == 'gaussian':
+        for t in range(nt):
+            for s in range(ns):
+                mask = gaussian_3D_density_mask((nx, ny, nz), 0.275)
+                sampled_kspace_5D[:, :, :, s, t] = mask * kspace[:, :, :, s, t]
 
     return sampled_kspace_5D
 

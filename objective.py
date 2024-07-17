@@ -39,6 +39,7 @@ class Objective(BaseObjective):
     requirements = ["pip:scikit-image"
                     "pip:brainweb_dl",
                     "pip:numba",
+                    "pip:scikit-image"
                     ]
 
     def set_data(self, X, y, sparsity):

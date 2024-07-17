@@ -20,6 +20,25 @@ def power_density_mask(kspace_shape, m):
     return power_mask
 
 
+def gaussian_3D_density_mask(kspace_shape, sigma):
+    x, y, z = np.indices(kspace_shape)
+    center_x = kspace_shape[0] // 2
+    center_y = kspace_shape[1] // 2
+    center_z = kspace_shape[2] // 2
+    max_radius = np.sqrt(center_x ** 2 + center_y ** 2 + center_z ** 2)
+
+    # Calculate distance from the center
+    radius = np.sqrt((z - center_z) ** 2 +
+                     (y - center_y) ** 2 +
+                     (x - center_x) ** 2) / max_radius
+    # Gaussian probability
+    probability = np.exp(-0.5 * (radius / sigma) ** 2)
+
+    gaussian_mask = np.random.uniform(0, 1, kspace_shape) < probability
+
+    return gaussian_mask.astype(np.complex128)
+
+
 # Create a 3D spatial mask using vectorized operations
 def power_3D_density_mask(kspace_shape, m):
     x, y, z = np.indices(kspace_shape)
