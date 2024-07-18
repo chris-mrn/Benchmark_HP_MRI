@@ -14,14 +14,12 @@ def sampled_5D_matlab_waves(kspace_5D,
                             points_per_wave,
                             number_of_waves,
                             MM,
-                            RNx,
-                            RNy,
-                            RNz,
-                            fOV,
                             DPnkDW,
                             kDW,
                             maxDG_Tpms):
     eng = matlab.engine.start_matlab()
+    (RNx, RNy, RNz, _, _) = kspace_5D.shape
+    fOV = RNx*1e-2
     eng.addpath(matlab_script_path)
     enc_g = eng.write_5D_LFRwaves_1H(points_per_wave,
                                      number_of_waves,
@@ -34,6 +32,7 @@ def sampled_5D_matlab_waves(kspace_5D,
                                      kDW,
                                      maxDG_Tpms,
                                      0)
+    eng.quit()
     enc_g = np.array(enc_g)
     enc_g = np.swapaxes(enc_g, 0, 1)
     sampled_kspace_5D = make_new_5D_kspace_sampled(kspace_5D, enc_g)
@@ -41,7 +40,7 @@ def sampled_5D_matlab_waves(kspace_5D,
 
 
 # Create a 5D spatial spectral temporal mask
-def sampled_kspace5D_mask(kspace, mask):
+def sampled_5Dkspace(kspace, mask):
     nx, ny, nz, ns, nt = kspace.shape
     sampled_kspace_5D = np.zeros((nx, ny, nz, ns, nt), dtype=np.complex128)
     if mask == 'power':
@@ -55,6 +54,17 @@ def sampled_kspace5D_mask(kspace, mask):
             for s in range(ns):
                 mask = gaussian_3D_density_mask((nx, ny, nz), 0.275)
                 sampled_kspace_5D[:, :, :, s, t] = mask * kspace[:, :, :, s, t]
+
+    elif mask == 'matlab':
+        sampled_kspace_5D = sampled_5D_matlab_waves(
+                        kspace,
+                        '/Users/christophermarouani/Desktop/Code_vesco_2D',
+                        8192,
+                        3500,
+                        20,
+                        512e-6,
+                        30,
+                        15)
 
     return sampled_kspace_5D
 

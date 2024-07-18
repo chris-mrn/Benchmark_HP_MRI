@@ -43,7 +43,7 @@ class Solver(BaseSolver):
                                        prior=pyproximal.L1(),
                                        prior_coeff=1,
                                        L=1)
-        reconstruction = self.model.reconstruct(self.X, n_iter=50)
+        reconstruction = self.model.reconstruct(self.X, n_iter=1)
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):

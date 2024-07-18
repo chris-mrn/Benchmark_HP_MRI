@@ -42,7 +42,7 @@ class Solver(BaseSolver):
         self.model = MRI_Reconstructor(n_dim=5,
                                        prior=pyproximal.proximal.L21(ndim=5),
                                        L=1)
-        reconstruction = self.model.reconstruct(self.X, n_iter=50)
+        reconstruction = self.model.reconstruct(self.X, n_iter=1)
         self.reconstruction = reconstruction
 
     def get_next(self, n_iter):

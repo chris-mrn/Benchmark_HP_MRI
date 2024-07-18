@@ -7,6 +7,7 @@ with safe_import_context() as import_ctx:
     from skimage.metrics import mean_squared_error as mse
     from benchmark_utils.Score import ssim_score_5D
     import numpy as np
+    from benchmark_utils.Sampling import sampled_5Dkspace
     from benchmark_utils.Chemicals import make_chemicals_images
 
 
@@ -23,7 +24,9 @@ class Objective(BaseObjective):
     # List of parameters for the objective. The benchmark will consider
     # the cross product for each key in the dictionary.
     # All parameters 'p' defined here are available as 'self.p'.
-    parameters = {}
+    parameters = {
+        'density': ('power', 'gaussian', 'matlab')
+    }
 
     # List of packages needed to run the benchmark.
     # They are installed with conda; to use pip, use 'pip:packagename'. To
@@ -39,16 +42,21 @@ class Objective(BaseObjective):
     requirements = ["pip:scikit-image"
                     "pip:brainweb_dl",
                     "pip:numba",
-                    "pip:scikit-image"
                     ]
 
-    def set_data(self, X, y, sparsity):
+    def set_data(self, image):
         # The keyword arguments of this function are the keys of the dictionary
         # returned by `Dataset.get_data`. This defines the benchmark's
         # API to pass data. This is customizable for each benchmark.
-        self.X = X
-        self.y = y
+        self.image = image
+        kspace = np.fft.fftshift(np.fft.fftn(image, norm='ortho'),
+                                 axes=(0, 1, 2))
+        undersampled_kspace = sampled_5Dkspace(kspace, mask=self.density)
+        sparsity = np.sum(undersampled_kspace == 0)/undersampled_kspace.size
         self.sparsity = sparsity
+
+        self.X = undersampled_kspace
+        self.y = make_chemicals_images(image, n_chemicals=5, threshold=0)
 
     def evaluate_result(self, reconstruction):
         # The keyword arguments of this function are the keys of the
